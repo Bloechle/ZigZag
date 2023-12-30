@@ -3,7 +3,7 @@ ZigZag is both an image binarization and background removal algorithm.
 ZigZag is the follow-up to YinYang, our previous image binarization algorithm.
 ZigZag is faster, more precise and simpler than YinYang.
 
-The [zigzag.jar](zigzag.jar) java archive is generated periodically from the source code for convenience.
+The [ZigZag.jar](ZigZag.jar) java archive is generated periodically from the source code for convenience.
 Be careful, as it may not be the latest version.
 
 
