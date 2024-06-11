@@ -1,12 +1,11 @@
 package sugarcube.zigzag;
 
-import sugarcube.zigzag.util.ArgsParser;
 import sugarcube.zigzag.util.ImageFilter;
 import sugarcube.zigzag.util.ImageUtil;
+import sugarcube.zigzag.util.MainManager;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.File;
 
 public class ZigZag extends ImageFilter {
     private int histWThresh = 256;
@@ -195,70 +194,8 @@ public class ZigZag extends ImageFilter {
         });
     }
 
-
     public static void main(String... args) {
-        ArgsParser argsParser = new ArgsParser(args);
-
-        try {
-            if (argsParser.has("-input")) {
-                processImage(argsParser);
-            } else {
-                argsParser.printUsage();
-            }
-        } catch (Exception e) {
-            ImageUtil.printStackTrace(e);
-            argsParser.printUsage();
-        }
+        MainManager.main(args);
     }
-
-    private static void processImage(ArgsParser argsParser) {
-        int size = argsParser.getInt("-size", 30);
-        int percent = argsParser.getInt("-percent", 100);
-        int mode = argsParser.getInt("-mode", ImageFilter.MODE_BINARY_UPSAMPLED);
-        int threads = argsParser.getInt("-threads", Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
-        boolean debug = argsParser.getBoolean("-debug", false);
-        String inputFilePath = argsParser.get("-input");
-        String outputFilePath = argsParser.get("-output", inputFilePath.replaceFirst("\\.(?=[^.]+$)", "_ZZ."));
-
-        File inputFile = new File(inputFilePath);
-        File outputFile = new File(outputFilePath);
-
-        if (inputFile.isDirectory()) {
-            processDirectory(inputFile, outputFile, size, percent, mode, threads, debug);
-        } else {
-            processSingleImage(size, percent, mode, threads, debug, inputFilePath, outputFilePath);
-        }
-
-        if (argsParser.getBoolean("-exit", false)) {
-            System.exit(0);
-        }
-    }
-
-    private static void processDirectory(File inputFile, File outputFile, int size, int percent, int mode, int threads, boolean debug) {
-        if (!outputFile.exists() && outputFile.mkdirs()) {
-            System.out.println("Directory created: "+outputFile);
-        }
-
-        File[] imageFiles = inputFile.listFiles((dir, name) -> {
-            String lowerName = name.toLowerCase();
-            return lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerName.endsWith(".png") || lowerName.endsWith(".bmp");
-        });
-
-        if (imageFiles != null) {
-            for (File imageFile : imageFiles) {
-                String outputFileName = new File(outputFile, imageFile.getName().replaceFirst("\\.[^.]+$", ".png")).getPath();
-                processSingleImage(size, percent, mode, threads, debug, imageFile.getPath(), outputFileName);
-            }
-        }
-    }
-
-    private static void processSingleImage(int size, int percent, int mode, int threads, boolean debug, String inputFilePath, String outputFilePath) {
-        ZigZag zigzag = new ZigZag(size, percent, mode, threads);
-        zigzag.debugEnabled = debug;
-
-        zigzag.applyFilter(inputFilePath, outputFilePath);
-        zigzag.dispose();
-    }
-
 
 }

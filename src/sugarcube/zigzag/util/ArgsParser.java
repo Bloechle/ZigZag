@@ -67,6 +67,7 @@ public class ArgsParser {
         System.out.println("    -percent <percent>       : Mean weight for historical documents (optional, default is 100)");
         System.out.println("    -mode <mode>             : Processing mode (optional, default is 1, 0=binary, 1=binary upsampled, 2=binary antialiased, 3=gray, 4=color)");
         System.out.println("    -threads <threads>       : Number of threads for processing (optional, default is half the number of available processors)");
+        System.out.println("    -lossless <true/false>   : Enable or disable lossless compression (optional, default is true)");
         System.out.println("    -debug <true/false>      : Enable or disable debug mode (optional, default is false)");
         System.out.println("    -exit <true/false>       : Whether to exit the application after processing (optional, default is false)");
     }

@@ -17,12 +17,14 @@ public abstract class ImageFilter {
     protected final int size;
     protected final int percent;
     protected final int mode;
+    protected boolean losslessEnabled = true;
     protected boolean debugEnabled;
     private final int numThreads;
     private final String debugSuffix = "_ZZ";
     private SliceProcessThreadPool threadPool;
     private File inputFile;
     private long processingTime;
+
 
     public interface ImageFunction {
         int computeValue(int x, int y, int value);
@@ -53,6 +55,10 @@ public abstract class ImageFilter {
 
     public File getDebugFile() {
         return debugEnabled ? inputFile : null;
+    }
+
+    public long getProcessingTime() {
+        return processingTime;
     }
 
     public BufferedImage applyFilter(BufferedImage image) {
@@ -99,7 +105,7 @@ public abstract class ImageFilter {
                 System.out.println("File not found: " + inFile.getPath());
             } else {
                 if (outFile == null) {
-                    String suffix = debugSuffix + ".png";
+                    String suffix = debugSuffix + (losslessEnabled ? ".png" : ".jpg");
                     outFile = new File(inFile.getPath().replace(".png", suffix).replace(".jpg", suffix).replace(".bmp", suffix));
                 }
 

@@ -29,7 +29,7 @@ zigzag.applyFilter("C:/MyImage.jpg", "C:/MyBinarizedImage.png");
 
 ### **By launching Java runtime**
 
-To run the tool using the Java runtime, use the following command format:
+To run the tool using the Java runtime, use the following command format (have a watch at 'run-example.cmd') :
 
 ```sh
 java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size <size> -percent <percent> -mode <mode> -threads <threads> -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>] [-exit <true/false>]
@@ -38,7 +38,7 @@ java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size <size> -percent 
 **Example:**
 
 ```sh
-java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size 25 -percent 100 -mode 3 -threads 4 -input "C:/MyImage.jpg" -output "C:/MyBinarizedImage.png"
+java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size 30 -percent 100 -mode 3 -threads 4 -input "C:/MyImage.jpg" -output "C:/MyBinarizedImage.png"
 ```
 
 ### **Command Line Options**
@@ -54,6 +54,7 @@ java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size 25 -percent 100 
   - 3: Background removal with gray-level foreground.
   - 4: Background removal with color foreground.
 - **-threads <threads>**: Number of threads for processing (optional, default is half the number of available processors).
+- **-lossless <true/false>**: Enable or disable lossless compression (optional, default is true). 
 - **-debug <true/false>**: Enable or disable debug mode (optional, default is false).
 - **-exit <true/false>**: Whether to exit the application after processing (optional, default is false).
 
