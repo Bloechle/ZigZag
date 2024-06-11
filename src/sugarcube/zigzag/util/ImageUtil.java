@@ -7,9 +7,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.LinkedList;
 
 public abstract class ImageUtil {
     public static BufferedImage createGrayImage(int width, int height) {
@@ -138,14 +135,6 @@ public abstract class ImageUtil {
         });
     }
 
-    public static void writeText(File file, String text) {
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8))) {
-            writer.write(text);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static void writeImage(BufferedImage img, File file) {
         writeImage(img, file, null);
     }
@@ -161,21 +150,6 @@ public abstract class ImageUtil {
                 e.printStackTrace();
             }
         }
-    }
-
-    public static File[] listImageFiles(File folder) {
-        return listFiles(folder, ".jpg", ".jpeg", ".png", ".bmp");
-    }
-
-    public static File[] listFiles(File folder, String... extensions) {
-        LinkedList<File> files = new LinkedList<>();
-        for (File child : folder.listFiles()) {
-            String name = child.getName().toLowerCase();
-            for (String ext : extensions)
-                if (name.endsWith(ext))
-                    files.add(child);
-        }
-        return files.toArray(new File[0]);
     }
 
     public static String removeExtension(String path) {

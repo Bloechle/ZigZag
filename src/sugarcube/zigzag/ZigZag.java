@@ -48,12 +48,13 @@ public class ZigZag extends ImageFilter {
 
         int[][][] rgbInt = new int[isColorMode ? 3 : 1][height][width];
         int[][] gInt = rgbInt[0];
-        int[][] cInt = new int[height][width];
+
 
         computeIntegralImages(gRast, gInt);
-        computeMaskImage(gRast, rgbRast, gInt, cInt, isColorMode, height, width);
+        computeMaskImage(gRast, rgbRast, gInt, isColorMode, height, width);
         writeDebugImage(img, "Mask");
 
+        int[][] cInt = new int[height][width];
         if (isColorMode) {
             computeColorIntegralImages(gRast, rgbRast, cInt, rgbInt, height, width);
         } else {
@@ -83,7 +84,7 @@ public class ZigZag extends ImageFilter {
         }
     }
 
-    private void computeMaskImage(WritableRaster gRast, WritableRaster rgbRast, int[][] gInt, int[][] cInt, boolean isColorMode, int height, int width) {
+    private void computeMaskImage(WritableRaster gRast, WritableRaster rgbRast, int[][] gInt, boolean isColorMode, int height, int width) {
         executeInParallel(height, (threadIndex, startY, endY) -> {
             int halfSize = size / 2;
             int side = 2 * halfSize + 1;
@@ -219,7 +220,7 @@ public class ZigZag extends ImageFilter {
         int threads = argsParser.getInt("-threads", Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
         boolean debug = argsParser.getBoolean("-debug", false);
         String inputFilePath = argsParser.get("-input");
-        String outputFilePath = argsParser.get("-output", inputFilePath.replaceFirst("\\.(?=[^\\.]+$)", "_ZZ."));
+        String outputFilePath = argsParser.get("-output", inputFilePath.replaceFirst("\\.(?=[^.]+$)", "_ZZ."));
 
         File inputFile = new File(inputFilePath);
         File outputFile = new File(outputFilePath);

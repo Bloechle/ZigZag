@@ -35,9 +35,6 @@ public class SliceProcessThreadPool {
         return threads.length;
     }
 
-    public int getThreadCount() {
-        return threads.length;
-    }
 
     public void waitForCompletion() {
         if (threads.length == 0) return;

@@ -1,7 +1,6 @@
 package sugarcube.zigzag.util;
 
 public class ProcessThread implements Runnable {
-    private final Thread thread;
     private Runnable task;
     private boolean isProcessing = false;
     private boolean terminate = false;
@@ -9,7 +8,7 @@ public class ProcessThread implements Runnable {
 
     public ProcessThread(int index) {
         this.index = index;
-        thread = new Thread(this, "ProcessThread-" + index);
+        Thread thread = new Thread(this, "ProcessThread-" + index);
         thread.setDaemon(true);
         thread.setPriority(Thread.NORM_PRIORITY + 1);
         thread.start();
@@ -43,10 +42,6 @@ public class ProcessThread implements Runnable {
             }
         }
         isProcessing = false;
-    }
-
-    public boolean isProcessing() {
-        return isProcessing;
     }
 
     public boolean isDone() {

@@ -24,10 +24,6 @@ public abstract class ImageFilter {
     private File inputFile;
     private long processingTime;
 
-    public interface BatchCallback {
-        void imageProcessed(File file);
-    }
-
     public interface ImageFunction {
         int computeValue(int x, int y, int value);
     }
@@ -149,13 +145,10 @@ public abstract class ImageFilter {
     }
 
     public void applyFunction(WritableRaster gRast, ImageFunction fct) {
-        executeInParallel(gRast.getHeight(), new SliceProcessable() {
-            @Override
-            public void run(int threadIndex, int startY, int endY) {
-                for (int y = startY; y < endY; y++) {
-                    for (int x = 0; x < gRast.getWidth(); x++) {
-                        gRast.setSample(x, y, 0, fct.computeValue(x, y, gRast.getSample(x, y, 0)));
-                    }
+        executeInParallel(gRast.getHeight(), (threadIndex, startY, endY) -> {
+            for (int y = startY; y < endY; y++) {
+                for (int x = 0; x < gRast.getWidth(); x++) {
+                    gRast.setSample(x, y, 0, fct.computeValue(x, y, gRast.getSample(x, y, 0)));
                 }
             }
         });

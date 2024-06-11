@@ -46,10 +46,6 @@ public class ArgsParser {
         return argsMap.get(key);
     }
 
-    public int getInt(String key) {
-        return Integer.parseInt(argsMap.get(key));
-    }
-
     public int getInt(String key, int defaultValue) {
         return argsMap.containsKey(key) ? Integer.parseInt(argsMap.get(key)) : defaultValue;
     }
