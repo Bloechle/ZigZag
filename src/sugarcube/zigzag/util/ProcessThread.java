@@ -1,70 +1,55 @@
 package sugarcube.zigzag.util;
 
-
-public class ProcessThread implements Runnable
-{
+public class ProcessThread implements Runnable {
     private final Thread thread;
-    private Runnable runnable;
-
+    private Runnable task;
     private boolean isProcessing = false;
-    private boolean doKill = false;
-
+    private boolean terminate = false;
     public final int index;
 
-    public ProcessThread()
-    {
-        this(-1);
-    }
-
-    public ProcessThread(int index)
-    {
+    public ProcessThread(int index) {
         this.index = index;
-        thread = new Thread(this, "ProcessThread");
-        thread.setDaemon(false);
-        thread.setPriority(8);
+        thread = new Thread(this, "ProcessThread-" + index);
+        thread.setDaemon(true);
+        thread.setPriority(Thread.NORM_PRIORITY + 1);
         thread.start();
     }
 
-    public void kill()
-    {
-        doKill = true;
+    public ProcessThread() {
+        this(-1);
     }
 
-    public void execute(Runnable runnable)
-    {
-        this.runnable = runnable;
+    public void kill() {
+        terminate = true;
     }
 
-    public void run()
-    {
-        while (!doKill)
-        {
-            try
-            {
-                Runnable currentRunnable = runnable;
-                if (currentRunnable != null)
-                {
+    public void execute(Runnable task) {
+        this.task = task;
+    }
+
+    @Override
+    public void run() {
+        while (!terminate) {
+            try {
+                if (task != null) {
                     isProcessing = true;
-                    runnable = null;
-                    currentRunnable.run();
+                    task.run();
+                    task = null;
                     isProcessing = false;
                 }
                 Thread.sleep(1);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         isProcessing = false;
     }
 
-    public boolean isProcessing()
-    {
+    public boolean isProcessing() {
         return isProcessing;
     }
 
-    public boolean isDone()
-    {
-        return runnable == null && !isProcessing;
+    public boolean isDone() {
+        return task == null && !isProcessing;
     }
 }

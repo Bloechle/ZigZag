@@ -1,0 +1,921 @@
+/*
+ * Project Overview:
+ * 
+ * This document provides an overview of the project, detailing its directory structure and key file contents. 
+ * It aims to facilitate AI and GPT comprehension of the project's architecture and functionality.
+ * 
+ * Project Description:
+ * - The project is an image binarization tool written in Java 8 (very important).
+ *
+ * Instructions for AI:
+ * - Upon processing this overview, AI should respond with "OK, I'm ready :-)", without further prompt, and be prepared to answer detailed questions.
+ * - When generating Java code (upon a subsequent prompt), avoid using Java comments and use English for logs :-)
+ * - Files are separated by '/* Path: <filepath> */' comments to indicate their locations.
+ */
+/*
+Directory Structure of the Project (as of 2024-06-11T14:37:37.512Z):
+
+sugarcube
+    zigzag
+        util
+            ArgsParser.java
+            Box2D.java
+            ImageFilter.java
+            ImageUtil.java
+            ProcessThread.java
+            SliceProcessable.java
+            SliceProcessThreadPool.java
+        ZigZag.java
+
+*/
+
+
+/* Path: sugarcube/zigzag/util/ArgsParser.java */
+
+package sugarcube.zigzag.util;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ArgsParser {
+    private final Map<String, String> argsMap = new HashMap<>();
+
+    public ArgsParser(String[] args) {
+        parseArgs(args);
+    }
+
+    private void parseArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-")) {
+                String key = args[i];
+                if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
+                    String value = parseValue(args, ++i);
+                    argsMap.put(key, value);
+                } else {
+                    argsMap.put(key, "true");
+                }
+            }
+        }
+    }
+
+    private String parseValue(String[] args, int index) {
+        StringBuilder value = new StringBuilder(args[index]);
+        if (value.charAt(0) == '"') {
+            value = new StringBuilder(value.substring(1));
+            while (index + 1 < args.length && !args[index + 1].endsWith("\"")) {
+                value.append(" ").append(args[++index]);
+            }
+            if (index + 1 < args.length && args[index + 1].endsWith("\"")) {
+                value.append(" ").append(args[++index], 0, args[index].length() - 1);
+            }
+        }
+        return value.toString();
+    }
+
+    public boolean has(String key) {
+        return argsMap.containsKey(key);
+    }
+
+    public String get(String key) {
+        return argsMap.get(key);
+    }
+
+    public int getInt(String key) {
+        return Integer.parseInt(argsMap.get(key));
+    }
+
+    public int getInt(String key, int defaultValue) {
+        return argsMap.containsKey(key) ? Integer.parseInt(argsMap.get(key)) : defaultValue;
+    }
+
+    public String get(String key, String defaultValue) {
+        return argsMap.getOrDefault(key, defaultValue);
+    }
+
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return argsMap.containsKey(key) ? Boolean.parseBoolean(argsMap.get(key)) : defaultValue;
+    }
+
+    public void printUsage() {
+        System.out.println("Usage:");
+        System.out.println("  java Main [-size <size>] [-percent <percent>] [-mode <mode>] [-threads <threads>] [-exit <true/false>] -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>] [-printTimes <true/false>]");
+        System.out.println("    -input <inputFilePath>   : Path to the input image file (required)");
+        System.out.println("    -output <outputFilePath> : Path to the output image file (optional, default is inputFilePath with 'ZZ' postfix)");
+        System.out.println("    -size <size>             : Size for processing (optional, default is 30)");
+        System.out.println("    -percent <percent>       : Percent for processing (optional, default is 100)");
+        System.out.println("    -mode <mode>             : Mode for processing (optional, default is 1)");
+        System.out.println("    -threads <threads>       : Number of threads for processing (optional, default is half the number of available processors)");
+        System.out.println("    -debug <true/false>      : Enable or disable debug mode (optional, default is false)");
+        System.out.println("    -printTimes <true/false> : Enable or disable printing times (optional, default is false)");
+        System.out.println("    -exit <true/false>       : Whether to exit the application after processing (optional, default is false)");
+    }
+}
+
+
+
+/* Path: sugarcube/zigzag/util/Box2D.java */
+
+package sugarcube.zigzag.util;
+
+
+public class Box2D {
+    public final int x0, y0, x1, y1;
+
+    public Box2D(int x0, int x1, int y0, int y1) {
+        this.x0 = x0;
+        this.x1 = x1;
+        this.y0 = y0;
+        this.y1 = y1;
+    }
+
+    public Box2D(int cx, int cy, int radius) {
+        this(cx - radius, cx + radius + 1, cy - radius, cy + radius + 1);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%d,%d,%d,%d)", x0, y0, x1 - x0, y1 - y0);
+    }
+}
+
+
+/* Path: sugarcube/zigzag/util/ImageFilter.java */
+
+package sugarcube.zigzag.util;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
+
+public abstract class ImageFilter {
+    public static final int MODE_BINARY = 0;
+    public static final int MODE_BINARY_UPSAMPLED = 1;
+    public static final int MODE_BINARY_ANTIALIASED = 2;
+    public static final int MODE_GRAY_LEVEL = 3;
+    public static final int MODE_COLOR = 4;
+    public static final int DEFAULT_SIZE = 30;
+    public static final int DEFAULT_THREADS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+
+    protected final int size;
+    protected final int percent;
+    protected final int mode;
+    protected boolean debugEnabled;
+    private final int numThreads;
+    private final String debugSuffix = "_ZZ";
+    private SliceProcessThreadPool threadPool;
+    private File inputFile;
+    private long processingTime;
+
+    public interface BatchCallback {
+        void imageProcessed(File file);
+    }
+
+    public interface ImageFunction {
+        int computeValue(int x, int y, int value);
+    }
+
+    public ImageFilter(int size, int percent, int mode, int numThreads) {
+        this.size = size;
+        this.percent = percent;
+        this.mode = mode;
+        this.numThreads = numThreads;
+    }
+
+    public ImageFilter(int size, int percent) {
+        this(size, percent, MODE_BINARY, DEFAULT_THREADS);
+    }
+
+    public ImageFilter(int size, int percent, int mode) {
+        this(size, percent, mode, DEFAULT_THREADS);
+    }
+
+    public SliceProcessThreadPool getThreadPool() {
+        return threadPool;
+    }
+
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    public String getCustomName() {
+        String postfix;
+        switch (mode) {
+            case MODE_BINARY:
+                postfix = "BW";
+                break;
+            case MODE_BINARY_UPSAMPLED:
+                postfix = "BW-UP";
+                break;
+            case MODE_BINARY_ANTIALIASED:
+                postfix = "BW-AA";
+                break;
+            case MODE_GRAY_LEVEL:
+                postfix = "GL";
+                break;
+            default:
+                postfix = "";
+        }
+        return getName().replace("Filter", "").replace("Binarizer", "") + size + "_" + percent + postfix;
+    }
+
+    public File getDebugFile() {
+        return debugEnabled ? inputFile : null;
+    }
+
+    public BufferedImage applyFilter(BufferedImage image) {
+        threadPool = new SliceProcessThreadPool(numThreads);
+        try {
+            long startTime = System.currentTimeMillis();
+            image = filterImplementation(ImageUtil.convertToRGBIfNeeded(image));
+            processingTime = System.currentTimeMillis() - startTime;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        threadPool.kill();
+        return image;
+    }
+
+    public abstract BufferedImage filterImplementation(BufferedImage img);
+
+    public void writeDebugImage(BufferedImage img, String suffix) {
+        if (debugEnabled) {
+            ImageUtil.writeImage(img, getDebugFile(), debugSuffix + "_" + suffix + ".png");
+        }
+    }
+
+    public BufferedImage applyFilter(File inFile) {
+        try {
+            if (!inFile.exists()) {
+                System.out.println("File not found: " + inFile.getPath());
+            } else {
+                return applyFilter(ImageIO.read(this.inputFile = inFile));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void applyFilter(String inPath, String outPath) {
+        applyFilter(new File(inPath), new File(outPath));
+    }
+
+    public void applyFilter(File inFile, File outFile) {
+        try {
+            if (!inFile.exists()) {
+                System.out.println("File not found: " + inFile.getPath());
+            } else {
+                if (outFile == null) {
+                    String suffix = debugSuffix + ".png";
+                    outFile = new File(inFile.getPath().replace(".png", suffix).replace(".jpg", suffix).replace(".bmp", suffix));
+                }
+                outFile.getParentFile().mkdirs();
+
+                ImageUtil.writeImage(applyFilter(inFile), outFile);
+
+                System.out.println("Processed file: " + inFile.getPath() + " in " + processingTime + " ms");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void executeInParallel(int size, SliceProcessable runnable) {
+        (threadPool == null ? SliceProcessThreadPool.EMPTY_THREAD_POOL : threadPool).execute(size, runnable);
+    }
+
+    public void dispose() {
+        if (threadPool != null) {
+            threadPool.kill();
+        }
+    }
+
+    public void applyFunction(WritableRaster gRast, ImageFunction fct) {
+        executeInParallel(gRast.getHeight(), new SliceProcessable() {
+            @Override
+            public void run(int threadIndex, int startY, int endY) {
+                for (int y = startY; y < endY; y++) {
+                    for (int x = 0; x < gRast.getWidth(); x++) {
+                        gRast.setSample(x, y, 0, fct.computeValue(x, y, gRast.getSample(x, y, 0)));
+                    }
+                }
+            }
+        });
+    }
+
+    public BufferedImage binarizeImage(BufferedImage gImg, boolean gammaCorrection, ImageFunction threshFct) {
+        if (mode == MODE_BINARY) {
+            applyFunction(gImg.getRaster(), threshFct);
+        } else {
+            BufferedImage upImage = ImageUtil.scaleImage(gImg, 2, false, null);
+            WritableRaster upRaster = upImage.getRaster();
+            applyFunction(upRaster, threshFct);
+            if (mode == MODE_BINARY_UPSAMPLED) {
+                return upImage;
+            }
+            ImageUtil.decimateImage(upImage, gImg, gammaCorrection, getThreadPool());
+        }
+        return gImg;
+    }
+
+    public boolean isBinaryMode() {
+        return mode == MODE_BINARY || mode == MODE_BINARY_UPSAMPLED || mode == MODE_BINARY_ANTIALIASED;
+    }
+}
+
+
+/* Path: sugarcube/zigzag/util/ImageUtil.java */
+
+package sugarcube.zigzag.util;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.LinkedList;
+
+public abstract class ImageUtil {
+    public static BufferedImage createGrayImage(int width, int height) {
+        return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+    }
+
+    public static BufferedImage convertToGray(BufferedImage rgbImg, BufferedImage grayImg) {
+        if (grayImg == null)
+            grayImg = createGrayImage(rgbImg.getWidth(), rgbImg.getHeight());
+        Graphics g = grayImg.getGraphics();
+        g.drawImage(rgbImg, 0, 0, null);
+        g.dispose();
+        return grayImg;
+    }
+
+    public static BufferedImage convertToRGBIfNeeded(BufferedImage img) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+
+        switch (img.getType()) {
+            case BufferedImage.TYPE_INT_RGB:
+            case BufferedImage.TYPE_INT_BGR:
+            case BufferedImage.TYPE_3BYTE_BGR:
+                break;
+            default:
+                System.out.println("ImageUtil - converting to RGB from type=" + img.getType());
+                BufferedImage rgbImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+                rgbImage.createGraphics().drawImage(img, 0, 0, width, height, null);
+                img = rgbImage;
+                break;
+        }
+        return img;
+    }
+
+    public static int[] getHistogram(WritableRaster raster, int band, int marginPercent) {
+        int h = raster.getHeight();
+        int w = raster.getWidth();
+        int marginH = h * marginPercent / 100;
+        int marginW = w * marginPercent / 100;
+        h -= marginH;
+        w -= marginW;
+        int[] histogram = new int[256];
+        for (int y = marginH; y < h; y++)
+            for (int x = marginW; x < w; x++)
+                histogram[raster.getSample(x, y, band)]++;
+        return histogram;
+    }
+
+    public static int computeOtsuThreshold(int[] histogram) {
+        int total = histogram.length;
+        float maxBetween = 0;
+        int threshold = 0;
+
+        for (int i = 0; i < total; i++) {
+            float sumB = 0, meanB = 0;
+            for (int j = 0; j < i; j++) {
+                sumB += histogram[j];
+                meanB += histogram[j] * j;
+            }
+            float sumF = 0, meanF = 0;
+            for (int j = i; j < total; j++) {
+                sumF += histogram[j];
+                meanF += histogram[j] * j;
+            }
+
+            meanB /= sumB;
+            meanF /= sumF;
+
+            if (sumB > 0 && sumF > 0) {
+                float between = sumB * sumF * (meanF - meanB) * (meanF - meanB);
+                if (between > maxBetween) {
+                    maxBetween = between;
+                    threshold = i;
+                }
+            }
+        }
+        return threshold;
+    }
+
+    public static BufferedImage scaleImage(BufferedImage srcImg, double scale, boolean bicubic, BufferedImage scaleImg) {
+        if (scaleImg == null)
+            scaleImg = new BufferedImage((int) Math.round(srcImg.getWidth() * scale), (int) Math.round(srcImg.getHeight() * scale), srcImg.getType());
+        AffineTransform transform = new AffineTransform();
+        transform.scale(scale, scale);
+        new AffineTransformOp(transform, bicubic ? AffineTransformOp.TYPE_BICUBIC : AffineTransformOp.TYPE_BILINEAR).filter(srcImg, scaleImg);
+        return scaleImg;
+    }
+
+    public static void decimateImage(BufferedImage upImg, BufferedImage gImg, boolean gammaCorrection, SliceProcessThreadPool threadPool) {
+        if (threadPool == null)
+            threadPool = SliceProcessThreadPool.EMPTY_THREAD_POOL;
+
+        WritableRaster upRaster = upImg.getRaster();
+        WritableRaster grayRaster = gImg.getRaster();
+        int width = gImg.getWidth();
+        int height = gImg.getHeight();
+
+        int maxX = width - 1;
+        int maxY = height - 1;
+
+        threadPool.execute(height, (threadIndex, startY, endY) -> {
+            int[] grayValues = new int[9];
+            for (int y = startY; y < endY; y++) {
+                for (int x = 0; x < width; x++) {
+                    int xUp = 2 * x - 1;
+                    int yUp = 2 * y - 1;
+
+                    if (x == 0) xUp++;
+                    else if (x == maxX) xUp--;
+
+                    if (y == 0) yUp++;
+                    else if (y == maxY) yUp--;
+
+                    int sum = 0;
+                    for (int value : upRaster.getSamples(xUp, yUp, 3, 3, 0, grayValues))
+                        sum += value;
+
+                    int mean = sum / 9;
+
+                    if (gammaCorrection)
+                        mean = (int) (255 * Math.pow(mean / 255.0, 1.5));
+
+                    grayRaster.setSample(x, y, 0, mean);
+                }
+            }
+        });
+    }
+
+    public static void writeText(File file, String text) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8))) {
+            writer.write(text);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeImage(BufferedImage img, File file) {
+        writeImage(img, file, null);
+    }
+
+    public static void writeImage(BufferedImage img, File file, String suffix) {
+        if (img != null && file != null) {
+            if (suffix != null && !suffix.isEmpty())
+                file = new File(removeExtension(file.getPath()) + (suffix.contains(".") ? suffix : suffix + ".png"));
+
+            try {
+                ImageIO.write(img, file.getPath().contains(".png") ? "png" : "jpg", file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static File[] listImageFiles(File folder) {
+        return listFiles(folder, ".jpg", ".jpeg", ".png", ".bmp");
+    }
+
+    public static File[] listFiles(File folder, String... extensions) {
+        LinkedList<File> files = new LinkedList<>();
+        for (File child : folder.listFiles()) {
+            String name = child.getName().toLowerCase();
+            for (String ext : extensions)
+                if (name.endsWith(ext))
+                    files.add(child);
+        }
+        return files.toArray(new File[0]);
+    }
+
+    public static String removeExtension(String path) {
+        int i = path.lastIndexOf(".");
+        return i > 0 ? path.substring(0, i) : path;
+    }
+}
+
+
+/* Path: sugarcube/zigzag/util/ProcessThread.java */
+
+package sugarcube.zigzag.util;
+
+public class ProcessThread implements Runnable {
+    private final Thread thread;
+    private Runnable task;
+    private boolean isProcessing = false;
+    private boolean terminate = false;
+    public final int index;
+
+    public ProcessThread(int index) {
+        this.index = index;
+        thread = new Thread(this, "ProcessThread-" + index);
+        thread.setDaemon(true);
+        thread.setPriority(Thread.NORM_PRIORITY + 1);
+        thread.start();
+    }
+
+    public ProcessThread() {
+        this(-1);
+    }
+
+    public void kill() {
+        terminate = true;
+    }
+
+    public void execute(Runnable task) {
+        this.task = task;
+    }
+
+    @Override
+    public void run() {
+        while (!terminate) {
+            try {
+                if (task != null) {
+                    isProcessing = true;
+                    task.run();
+                    task = null;
+                    isProcessing = false;
+                }
+                Thread.sleep(1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        isProcessing = false;
+    }
+
+    public boolean isProcessing() {
+        return isProcessing;
+    }
+
+    public boolean isDone() {
+        return task == null && !isProcessing;
+    }
+}
+
+
+
+/* Path: sugarcube/zigzag/util/SliceProcessable.java */
+
+package sugarcube.zigzag.util;
+
+public interface SliceProcessable {
+    void run(int index, int minIncluded, int maxExcluded);
+}
+
+
+/* Path: sugarcube/zigzag/util/SliceProcessThreadPool.java */
+
+package sugarcube.zigzag.util;
+
+public class SliceProcessThreadPool {
+    public static final SliceProcessThreadPool EMPTY_THREAD_POOL = new SliceProcessThreadPool(0);
+    private final ProcessThread[] threads;
+
+    public SliceProcessThreadPool(int size) {
+        threads = new ProcessThread[size];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new ProcessThread(i);
+        }
+    }
+
+    public void execute(int size, SliceProcessable task) {
+        execute(size, true, task);
+    }
+
+    public void execute(int size, boolean doSlice, SliceProcessable task) {
+        int numThreads = Math.max(threads.length, 1);
+        int sliceSize = doSlice ? size / numThreads : 1;
+        for (int i = 0; i < (doSlice ? numThreads : size); i++) {
+            int threadIndex = i;
+            if (threadIndex < threads.length) {
+                final int minIncluded = threadIndex * sliceSize;
+                final int maxExcluded = minIncluded + sliceSize;
+                threads[threadIndex].execute(() -> task.run(threadIndex, minIncluded, threadIndex == threads.length - 1 ? size : maxExcluded));
+            } else {
+                task.run(threadIndex, 0, size);
+            }
+        }
+        waitForCompletion();
+    }
+
+    public int size() {
+        return threads.length;
+    }
+
+    public int getThreadCount() {
+        return threads.length;
+    }
+
+    public void waitForCompletion() {
+        if (threads.length == 0) return;
+        boolean inProgress;
+        do {
+            inProgress = false;
+            try {
+                for (ProcessThread thread : threads)
+                    if (!thread.isDone()) {
+                        inProgress = true;
+                        break;
+                    }
+                Thread.sleep(1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } while (inProgress);
+    }
+
+    public void kill() {
+        for (ProcessThread thread : threads) thread.kill();
+    }
+}
+
+
+
+/* Path: sugarcube/zigzag/ZigZag.java */
+
+package sugarcube.zigzag;
+
+import sugarcube.zigzag.util.ArgsParser;
+import sugarcube.zigzag.util.ImageFilter;
+import sugarcube.zigzag.util.ImageUtil;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
+
+public class ZigZag extends ImageFilter {
+    private int histWThresh = 256;
+
+    public ZigZag() {
+        this(DEFAULT_SIZE);
+    }
+
+    public ZigZag(int size) {
+        this(size, MODE_GRAY_LEVEL);
+    }
+
+    public ZigZag(int size, int mode) {
+        this(size, 100, mode);
+    }
+
+    public ZigZag(int size, int percent, int mode) {
+        this(size, percent, mode, DEFAULT_THREADS);
+    }
+
+    public ZigZag(int size, int percent, int mode, int numThreads) {
+        super(size, percent, mode, numThreads);
+    }
+
+    public ZigZag setHistWThresh(int threshold) {
+        this.histWThresh = threshold;
+        return this;
+    }
+
+    @Override
+    public BufferedImage filterImplementation(BufferedImage img) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+        BufferedImage gImg = ImageUtil.convertToGray(img, null);
+        WritableRaster gRast = gImg.getRaster();
+        WritableRaster rgbRast = img.getRaster();
+
+        boolean isColorMode = mode == MODE_COLOR;
+
+        int[][][] rgbInt = new int[isColorMode ? 3 : 1][height][width];
+        int[][] gInt = rgbInt[0];
+        int[][] cInt = new int[height][width];
+
+        computeIntegralImages(gRast, gInt);
+        computeMaskImage(gRast, rgbRast, gInt, cInt, isColorMode, height, width);
+        writeDebugImage(img, "Mask");
+
+        if (isColorMode) {
+            computeColorIntegralImages(gRast, rgbRast, cInt, rgbInt, height, width);
+        } else {
+            computeGrayIntegralImages(rgbRast, gRast, cInt, gInt, height, width);
+        }
+
+        generateForeground(gRast, rgbRast, cInt, gInt, rgbInt, isColorMode, height, width);
+
+        writeDebugImage(gImg, "FG");
+        writeDebugImage(img, "BG");
+
+        if (mode == MODE_COLOR) {
+            return img;
+        }
+
+        int otsuThreshold = isBinaryMode() ? Math.min(250, ImageUtil.computeOtsuThreshold(ImageUtil.getHistogram(gRast, 0, 10))) : 250;
+
+        return binarizeImage(gImg, false, (x, y, value) -> value < otsuThreshold ? (mode == MODE_GRAY_LEVEL ? value : 0) : 255);
+    }
+
+    private void computeIntegralImages(WritableRaster gRast, int[][] gInt) {
+        for (int y = 0; y < gInt.length; y++) {
+            for (int sum = 0, x = 0; x < gInt[0].length; x++) {
+                sum += gRast.getSample(x, y, 0);
+                gInt[y][x] = y == 0 ? sum : gInt[y - 1][x] + sum;
+            }
+        }
+    }
+
+    private void computeMaskImage(WritableRaster gRast, WritableRaster rgbRast, int[][] gInt, int[][] cInt, boolean isColorMode, int height, int width) {
+        executeInParallel(height, (threadIndex, startY, endY) -> {
+            int halfSize = size / 2;
+            int side = 2 * halfSize + 1;
+            int numPixels = side * side;
+            int x1, x2, y1, y2, mean, value;
+
+            for (int y = startY; y < endY; y++) {
+                y1 = y - halfSize - 1;
+                y2 = y + halfSize;
+                if (y1 < 0) y2 = (y1 = 0) + side;
+                else if (y2 >= height) y1 = (y2 = height - 1) - side;
+
+                for (int x = 0; x < width; x++) {
+                    x1 = x - halfSize - 1;
+                    x2 = x + halfSize;
+                    if (x1 < 0) x2 = (x1 = 0) + side;
+                    else if (x2 >= width) x1 = (x2 = width - 1) - side;
+
+                    mean = percent * (gInt[y2][x2] - gInt[y1][x2] - gInt[y2][x1] + gInt[y1][x1]) / (100 * numPixels);
+                    value = gRast.getSample(x, y, 0);
+                    if (value > histWThresh) value = 0;
+                    if (isColorMode) {
+                        gRast.setSample(x, y, 0, value < mean ? 0 : value);
+                    } else {
+                        rgbRast.setSample(x, y, 0, value < mean ? 0 : value);
+                        if (debugEnabled) {
+                            for (int band = 1; band < 3; band++) {
+                                rgbRast.setSample(x, y, band, value < mean ? 0 : value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void computeColorIntegralImages(WritableRaster gRast, WritableRaster rgbRast, int[][] cInt, int[][][] rgbInt, int height, int width) {
+        int[] rgbPixel = new int[3];
+        int[] rgbSum = new int[3];
+        for (int y = 0; y < height; y++) {
+            for (int counter = 0, x = 0; x < width; x++) {
+                if (gRast.getSample(x, y, 0) > 0) {
+                    counter++;
+                    rgbRast.getPixel(x, y, rgbPixel);
+                    for (int band = 0; band < 3; band++) rgbSum[band] += rgbPixel[band];
+                }
+                cInt[y][x] = y == 0 ? counter : cInt[y - 1][x] + counter;
+                for (int band = 0; band < 3; band++)
+                    rgbInt[band][y][x] = y == 0 ? rgbSum[band] : rgbInt[band][y - 1][x] + rgbSum[band];
+            }
+        }
+    }
+
+    private void computeGrayIntegralImages(WritableRaster rgbRast, WritableRaster gRast, int[][] cInt, int[][] gInt, int height, int width) {
+        for (int y = 0; y < height; y++) {
+            for (int gSum = 0, counter = 0, x = 0; x < width; x++) {
+                if (rgbRast.getSample(x, y, 0) > 0) {
+                    counter++;
+                    gSum += gRast.getSample(x, y, 0);
+                }
+                cInt[y][x] = y == 0 ? counter : cInt[y - 1][x] + counter;
+                gInt[y][x] = y == 0 ? gSum : gInt[y - 1][x] + gSum;
+            }
+        }
+    }
+
+    private void generateForeground(WritableRaster gRast, WritableRaster rgbRast, int[][] cInt, int[][] gInt, int[][][] rgbInt, boolean isColorMode, int height, int width) {
+        executeInParallel(height, (threadIndex, startY, endY) -> {
+            int halfSize = size / 2;
+            int side = 2 * halfSize + 1;
+            int[] rgbPixel = isColorMode ? new int[3] : null;
+            int x1, x2, y1, y2, numPixels, mean, value;
+
+            for (int y = startY; y < endY; y++) {
+                y1 = y - halfSize - 1;
+                y2 = y + halfSize;
+                if (y1 < 0) y2 = (y1 = 0) + side;
+                else if (y2 >= height) y1 = (y2 = height - 1) - side;
+
+                for (int x = 0; x < width; x++) {
+                    x1 = x - halfSize - 1;
+                    x2 = x + halfSize;
+                    if (x1 < 0) x2 = (x1 = 0) + side;
+                    else if (x2 >= width) x1 = (x2 = width - 1) - side;
+
+                    numPixels = (cInt[y2][x2] - cInt[y1][x2] - cInt[y2][x1] + cInt[y1][x1]);
+                    if (isColorMode) {
+                        rgbRast.getPixel(x, y, rgbPixel);
+                        for (int band = 0; band < 3; band++) {
+                            mean = numPixels == 0 ? 0 : (rgbInt[band][y2][x2] - rgbInt[band][y1][x2] - rgbInt[band][y2][x1] + rgbInt[band][y1][x1]) / numPixels;
+                            rgbPixel[band] = rgbPixel[band] >= mean ? 255 : rgbPixel[band] * 256 / mean;
+                            if (debugEnabled) rgbPixel[band] = mean;
+                        }
+                        rgbRast.setPixel(x, y, rgbPixel);
+                        gRast.setSample(x, y, 0, Math.min(Math.min(rgbPixel[0], rgbPixel[1]), rgbPixel[2]));
+                    } else {
+                        mean = numPixels == 0 ? 0 : (gInt[y2][x2] - gInt[y1][x2] - gInt[y2][x1] + gInt[y1][x1]) / numPixels;
+                        value = gRast.getSample(x, y, 0);
+                        gRast.setSample(x, y, 0, value >= mean ? 255 : value * 256 / mean);
+                        if (debugEnabled) {
+                            for (int band = 0; band < 3; band++) {
+                                rgbRast.setSample(x, y, band, mean);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    public static void main(String... args) {
+        ArgsParser argsParser = new ArgsParser(
+                args.length == 0 ? new String[]{"-input", "C:/Projects/ZigZag/eval/Test/input/", "-output", "C:/Projects/ZigZag/eval/Test/output"} : args
+        );
+
+        try {
+            if (argsParser.has("-input")) {
+                processImage(argsParser);
+            } else {
+                argsParser.printUsage();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            argsParser.printUsage();
+        }
+    }
+
+    private static void processImage(ArgsParser argsParser) {
+        int size = argsParser.getInt("-size", 30);
+        int percent = argsParser.getInt("-percent", 100);
+        int mode = argsParser.getInt("-mode", ImageFilter.MODE_BINARY_UPSAMPLED);
+        int threads = argsParser.getInt("-threads", Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
+        boolean debug = argsParser.getBoolean("-debug", false);
+        String inputFilePath = argsParser.get("-input");
+        String outputFilePath = argsParser.get("-output", inputFilePath.replaceFirst("\\.(?=[^\\.]+$)", "_ZZ."));
+
+        File inputFile = new File(inputFilePath);
+        File outputFile = new File(outputFilePath);
+
+        if (inputFile.isDirectory()) {
+            processDirectory(inputFile, outputFile, size, percent, mode, threads, debug);
+        } else {
+            processSingleImage(size, percent, mode, threads, debug, inputFilePath, outputFilePath);
+        }
+
+        if (argsParser.getBoolean("-exit", false)) {
+            System.exit(0);
+        }
+    }
+
+    private static void processDirectory(File inputFile, File outputFile, int size, int percent, int mode, int threads, boolean debug) {
+        if (!outputFile.exists()) {
+            outputFile.mkdirs();
+        }
+
+        File[] imageFiles = inputFile.listFiles((dir, name) -> {
+            String lowerName = name.toLowerCase();
+            return lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerName.endsWith(".png") || lowerName.endsWith(".bmp");
+        });
+
+        if (imageFiles != null) {
+            for (File imageFile : imageFiles) {
+                String outputFileName = new File(outputFile, imageFile.getName().replaceFirst("\\.[^.]+$", ".png")).getPath();
+                processSingleImage(size, percent, mode, threads, debug, imageFile.getPath(), outputFileName);
+            }
+        }
+    }
+
+    private static void processSingleImage(int size, int percent, int mode, int threads, boolean debug, String inputFilePath, String outputFilePath) {
+        ZigZag zigzag = new ZigZag(size, percent, mode, threads);
+        zigzag.debugEnabled = debug;
+
+        zigzag.applyFilter(inputFilePath, outputFilePath);
+        zigzag.dispose();
+    }
+
+
+}
+
