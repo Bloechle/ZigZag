@@ -197,9 +197,7 @@ public class ZigZag extends ImageFilter {
 
 
     public static void main(String... args) {
-        ArgsParser argsParser = new ArgsParser(
-                args.length == 0 ? new String[]{"-input", "C:/Projects/ZigZag/eval/Test/input/", "-output", "C:/Projects/ZigZag/eval/Test/output"} : args
-        );
+        ArgsParser argsParser = new ArgsParser(args);
 
         try {
             if (argsParser.has("-input")) {
@@ -208,7 +206,7 @@ public class ZigZag extends ImageFilter {
                 argsParser.printUsage();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ImageUtil.printStackTrace(e);
             argsParser.printUsage();
         }
     }
@@ -237,8 +235,8 @@ public class ZigZag extends ImageFilter {
     }
 
     private static void processDirectory(File inputFile, File outputFile, int size, int percent, int mode, int threads, boolean debug) {
-        if (!outputFile.exists()) {
-            outputFile.mkdirs();
+        if (!outputFile.exists() && outputFile.mkdirs()) {
+            System.out.println("Directory created: "+outputFile);
         }
 
         File[] imageFiles = inputFile.listFiles((dir, name) -> {

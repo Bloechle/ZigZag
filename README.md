@@ -45,8 +45,8 @@ java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size 25 -percent 100 
 
 - **-input <inputFilePath>**: Path to the input image file or directory (required).
 - **-output <outputFilePath>**: Path to the output image file or directory (optional, default is inputFilePath with 'ZZ' postfix).
-- **-size <size>**: Windows size for processing, typical values can range from 10 to 100 pixels (optional, default is 25).
-- **-percent <percent>**: Percent for processing, typical values can range from 50 to 100 percent (optional, default is 100).
+- **-size <size>**: Windows size, typical values can range from 10 to 100 pixels (optional, default is 30).
+- **-percent <percent>**: Mean weight for historical documents, typical values can range from 50 to 100 percent (optional, default is 100).
 - **-mode <mode>**: Processing mode (optional, default is 1). Available modes:
   - 0: Standard binarization mode.
   - 1: Upsampled binarization mode (x2).

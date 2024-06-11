@@ -49,7 +49,7 @@ public class SliceProcessThreadPool {
                     }
                 Thread.sleep(1);
             } catch (Exception e) {
-                e.printStackTrace();
+                ImageUtil.printStackTrace(e);
             }
         } while (inProgress);
     }

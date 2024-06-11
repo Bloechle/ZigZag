@@ -60,15 +60,14 @@ public class ArgsParser {
 
     public void printUsage() {
         System.out.println("Usage:");
-        System.out.println("  java Main [-size <size>] [-percent <percent>] [-mode <mode>] [-threads <threads>] [-exit <true/false>] -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>] [-printTimes <true/false>]");
+        System.out.println("  java Main [-size <size>] [-percent <percent>] [-mode <mode>] [-threads <threads>] [-exit <true/false>] -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>]");
         System.out.println("    -input <inputFilePath>   : Path to the input image file (required)");
         System.out.println("    -output <outputFilePath> : Path to the output image file (optional, default is inputFilePath with 'ZZ' postfix)");
-        System.out.println("    -size <size>             : Size for processing (optional, default is 30)");
-        System.out.println("    -percent <percent>       : Percent for processing (optional, default is 100)");
-        System.out.println("    -mode <mode>             : Mode for processing (optional, default is 1)");
+        System.out.println("    -size <size>             : Window size (optional, default is 30)");
+        System.out.println("    -percent <percent>       : Mean weight for historical documents (optional, default is 100)");
+        System.out.println("    -mode <mode>             : Processing mode (optional, default is 1, 0=binary, 1=binary upsampled, 2=binary antialiased, 3=gray, 4=color)");
         System.out.println("    -threads <threads>       : Number of threads for processing (optional, default is half the number of available processors)");
         System.out.println("    -debug <true/false>      : Enable or disable debug mode (optional, default is false)");
-        System.out.println("    -printTimes <true/false> : Enable or disable printing times (optional, default is false)");
         System.out.println("    -exit <true/false>       : Whether to exit the application after processing (optional, default is false)");
     }
 }

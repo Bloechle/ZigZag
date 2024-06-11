@@ -51,27 +51,6 @@ public abstract class ImageFilter {
         return getClass().getSimpleName();
     }
 
-    public String getCustomName() {
-        String postfix;
-        switch (mode) {
-            case MODE_BINARY:
-                postfix = "BW";
-                break;
-            case MODE_BINARY_UPSAMPLED:
-                postfix = "BW-UP";
-                break;
-            case MODE_BINARY_ANTIALIASED:
-                postfix = "BW-AA";
-                break;
-            case MODE_GRAY_LEVEL:
-                postfix = "GL";
-                break;
-            default:
-                postfix = "";
-        }
-        return getName().replace("Filter", "").replace("Binarizer", "") + size + "_" + percent + postfix;
-    }
-
     public File getDebugFile() {
         return debugEnabled ? inputFile : null;
     }
@@ -83,7 +62,7 @@ public abstract class ImageFilter {
             image = filterImplementation(ImageUtil.convertToRGBIfNeeded(image));
             processingTime = System.currentTimeMillis() - startTime;
         } catch (Exception e) {
-            e.printStackTrace();
+            ImageUtil.printStackTrace(e);
         }
         threadPool.kill();
         return image;
@@ -105,7 +84,7 @@ public abstract class ImageFilter {
                 return applyFilter(ImageIO.read(this.inputFile = inFile));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ImageUtil.printStackTrace(e);
         }
         return null;
     }
@@ -123,14 +102,16 @@ public abstract class ImageFilter {
                     String suffix = debugSuffix + ".png";
                     outFile = new File(inFile.getPath().replace(".png", suffix).replace(".jpg", suffix).replace(".bmp", suffix));
                 }
-                outFile.getParentFile().mkdirs();
+
+                if (outFile.getParentFile().mkdirs())
+                    System.out.println("Directory created " + outFile.getParentFile());
 
                 ImageUtil.writeImage(applyFilter(inFile), outFile);
 
                 System.out.println("Processed file: " + inFile.getPath() + " in " + processingTime + " ms");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ImageUtil.printStackTrace(e);
         }
     }
 

@@ -147,7 +147,7 @@ public abstract class ImageUtil {
             try {
                 ImageIO.write(img, file.getPath().contains(".png") ? "png" : "jpg", file);
             } catch (IOException e) {
-                e.printStackTrace();
+                printStackTrace(e);
             }
         }
     }
@@ -155,5 +155,11 @@ public abstract class ImageUtil {
     public static String removeExtension(String path) {
         int i = path.lastIndexOf(".");
         return i > 0 ? path.substring(0, i) : path;
+    }
+
+    public static void printStackTrace(Exception e)
+    {
+        System.out.println("Exception thrown: "+e.getMessage());
+        e.printStackTrace();
     }
 }

@@ -38,7 +38,7 @@ public class ProcessThread implements Runnable {
                 }
                 Thread.sleep(1);
             } catch (Exception e) {
-                e.printStackTrace();
+                ImageUtil.printStackTrace(e);
             }
         }
         isProcessing = false;
