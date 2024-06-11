@@ -49,15 +49,15 @@ public class ZigZag extends ImageFilter {
         int[][] gInt = rgbInt[0];
 
 
-        computeIntegralImages(gRast, gInt);
+        computeIntegralImage(gRast, gInt);
         computeMaskImage(gRast, rgbRast, gInt, isColorMode, height, width);
         writeDebugImage(img, "Mask");
 
         int[][] cInt = new int[height][width];
         if (isColorMode) {
-            computeColorIntegralImages(gRast, rgbRast, cInt, rgbInt, height, width);
+            computeColorIntegralImage(gRast, rgbRast, cInt, rgbInt, height, width);
         } else {
-            computeGrayIntegralImages(rgbRast, gRast, cInt, gInt, height, width);
+            computeGrayIntegralImage(rgbRast, gRast, cInt, gInt, height, width);
         }
 
         generateForeground(gRast, rgbRast, cInt, gInt, rgbInt, isColorMode, height, width);
@@ -74,7 +74,7 @@ public class ZigZag extends ImageFilter {
         return binarizeImage(gImg, false, (x, y, value) -> value < otsuThreshold ? (mode == MODE_GRAY_LEVEL ? value : 0) : 255);
     }
 
-    private void computeIntegralImages(WritableRaster gRast, int[][] gInt) {
+    private void computeIntegralImage(WritableRaster gRast, int[][] gInt) {
         for (int y = 0; y < gInt.length; y++) {
             for (int sum = 0, x = 0; x < gInt[0].length; x++) {
                 sum += gRast.getSample(x, y, 0);
@@ -120,7 +120,7 @@ public class ZigZag extends ImageFilter {
         });
     }
 
-    private void computeColorIntegralImages(WritableRaster gRast, WritableRaster rgbRast, int[][] cInt, int[][][] rgbInt, int height, int width) {
+    private void computeColorIntegralImage(WritableRaster gRast, WritableRaster rgbRast, int[][] cInt, int[][][] rgbInt, int height, int width) {
         int[] rgbPixel = new int[3];
         int[] rgbSum = new int[3];
         for (int y = 0; y < height; y++) {
@@ -137,7 +137,7 @@ public class ZigZag extends ImageFilter {
         }
     }
 
-    private void computeGrayIntegralImages(WritableRaster rgbRast, WritableRaster gRast, int[][] cInt, int[][] gInt, int height, int width) {
+    private void computeGrayIntegralImage(WritableRaster rgbRast, WritableRaster gRast, int[][] cInt, int[][] gInt, int height, int width) {
         for (int y = 0; y < height; y++) {
             for (int gSum = 0, counter = 0, x = 0; x < width; x++) {
                 if (rgbRast.getSample(x, y, 0) > 0) {

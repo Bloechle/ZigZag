@@ -49,10 +49,6 @@ public abstract class ImageFilter {
         return threadPool;
     }
 
-    public String getName() {
-        return getClass().getSimpleName();
-    }
-
     public File getDebugFile() {
         return debugEnabled ? inputFile : null;
     }
