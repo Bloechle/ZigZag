@@ -15,7 +15,7 @@ public class ZigZag extends ImageFilter {
     }
 
     public ZigZag(int size) {
-        this(size, MODE_GRAY_LEVEL);
+        this(size, MODE_BINARY_UPSAMPLED);
     }
 
     public ZigZag(int size, int mode) {

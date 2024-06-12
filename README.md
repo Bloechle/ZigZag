@@ -16,14 +16,14 @@ The **zigzag.jar** Java archive is generated periodically from the source code f
 To use the API, create a new instance of **ZigZag** with the desired parameters and call the filter method with the input and output image paths.
 
 ```java
-ZigZag zigzag = new ZigZag(int size, int percent, int mode, int threads);
+ZigZag zigzag = new ZigZag(int size, int percent, int mode);
 zigzag.applyFilter(inputImagePath, outputImagePath);
 ```
 
 **Example:**
 
 ```java
-ZigZag zigzag = new ZigZag(25, 100, ImageFilter.MODE_GRAY_LEVEL, 4);
+ZigZag zigzag = new ZigZag(30, 100, ImageFilter.MODE_BINARY_UPSAMPLED);
 zigzag.applyFilter("C:/MyImage.jpg", "C:/MyBinarizedImage.png");
 ```
 

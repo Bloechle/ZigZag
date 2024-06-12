@@ -60,6 +60,8 @@ public class MainManager {
         String inputFilePath = argsParser.get("-input");
         String outputFilePath = argsParser.get("-output", inputFilePath.replaceFirst("\\.(?=[^.]+$)", "_ZZ."));
 
+        printConfiguration(size, percent, mode, threads, debug, lossless, inputFilePath, outputFilePath);
+
         File inputFile = new File(inputFilePath);
         File outputFile = new File(outputFilePath);
 
@@ -83,6 +85,18 @@ public class MainManager {
         zigzag.applyFilter(inputFilePath, outputFilePath);
         zigzag.dispose();
         return zigzag.getProcessingTime();
+    }
+
+    private static void printConfiguration(int size, int percent, int mode, int threads, boolean debug, boolean lossless, String inputFilePath, String outputFilePath) {
+        System.out.println("Configuration:");
+        System.out.println("  Size: " + size);
+        System.out.println("  Percent: " + percent);
+        System.out.println("  Mode: " + mode);
+        System.out.println("  Threads: " + threads);
+        System.out.println("  Debug: " + debug);
+        System.out.println("  Lossless: " + lossless);
+        System.out.println("  Input File: " + inputFilePath);
+        System.out.println("  Output File: " + outputFilePath);
     }
 
     private static void generateCSVReport(String outputDirPath) {
