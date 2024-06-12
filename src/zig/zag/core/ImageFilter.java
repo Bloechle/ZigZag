@@ -1,4 +1,8 @@
-package sugarcube.zigzag.util;
+package zig.zag.core;
+
+import zig.zag.process.SliceProcessThreadPool;
+import zig.zag.process.SliceProcessable;
+import zig.zag.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

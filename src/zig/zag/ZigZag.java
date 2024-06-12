@@ -1,8 +1,8 @@
-package sugarcube.zigzag;
+package zig.zag;
 
-import sugarcube.zigzag.util.ImageFilter;
-import sugarcube.zigzag.util.ImageUtil;
-import sugarcube.zigzag.util.MainManager;
+import zig.zag.core.ImageFilter;
+import zig.zag.util.ImageUtil;
+import zig.zag.core.MainManager;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;

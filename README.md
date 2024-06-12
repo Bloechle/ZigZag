@@ -3,7 +3,7 @@
 
 **ZigZag** is both an image binarization and background removal algorithm. It is the follow-up to **YinYang**, our previous image binarization algorithm. ZigZag is faster, more precise, and simpler than YinYang.
 
-The **zigzag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version.
+The **zigzag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version (but should).
 
 ## **Requires**
 
@@ -32,13 +32,13 @@ zigzag.applyFilter("C:/MyImage.jpg", "C:/MyBinarizedImage.png");
 To run the tool using the Java runtime, use the following command format (have a watch at 'run-example.cmd') :
 
 ```sh
-java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size <size> -percent <percent> -mode <mode> -threads <threads> -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>] [-exit <true/false>]
+java -cp <zigZagJarPath> zig.zag.ZigZag -size <size> -percent <percent> -mode <mode> -threads <threads> -input <inputFilePath> [-output <outputFilePath>] [-debug <true/false>] [-exit <true/false>]
 ```
 
 **Example:**
 
 ```sh
-java -cp target/your-jar-file.jar sugarcube.zigzag.ZigZag -size 30 -percent 100 -mode 3 -threads 4 -input "C:/MyImage.jpg" -output "C:/MyBinarizedImage.png"
+java -cp "C:/path/ZigZag.jar" zig.zag.ZigZag -size 30 -percent 100 -mode 3 -threads 4 -input "C:/path/MyImage.jpg" -output "C:/path/MyBinarizedImage.png"
 ```
 
 ### **Command Line Options**

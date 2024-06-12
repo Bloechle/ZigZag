@@ -1,4 +1,6 @@
-package sugarcube.zigzag.util;
+package zig.zag.process;
+
+import zig.zag.util.ImageUtil;
 
 public class ProcessThread implements Runnable {
     private Runnable task;

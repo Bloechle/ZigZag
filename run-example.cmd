@@ -13,14 +13,14 @@ set MODE_GRAY_LEVEL=3
 set MODE_COLOR=4
 
 REM Apply the parameters
-set MODE=%MODE_ANTIALIASED%
+set MODE=%MODE_UPSAMPLED%
 set SIZE=30
 set PERCENT=100
 set LOSSLESS=true
-set DEBUG=true
+set DEBUG=false
 
 REM Execute the Java command to convert the files
-java -cp "%JAR_PATH%" sugarcube.zigzag.ZigZag -mode %MODE% -size %SIZE% -percent %PERCENT% -lossless %LOSSLESS% -debug %DEBUG% -input "%INPUT_DIR%" -output "%OUTPUT_DIR%"
+java -cp "%JAR_PATH%" zig.zag.ZigZag -mode %MODE% -size %SIZE% -percent %PERCENT% -lossless %LOSSLESS% -debug %DEBUG% -input "%INPUT_DIR%" -output "%OUTPUT_DIR%"
 
 echo Conversion done.
 pause

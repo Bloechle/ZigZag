@@ -1,4 +1,6 @@
-package sugarcube.zigzag.util;
+package zig.zag.process;
+
+import zig.zag.util.ImageUtil;
 
 public class SliceProcessThreadPool {
     public static final SliceProcessThreadPool EMPTY_THREAD_POOL = new SliceProcessThreadPool(0);
