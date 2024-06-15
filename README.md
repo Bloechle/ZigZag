@@ -1,4 +1,4 @@
-<img src="zz-logo.png" alt="ZigZag Logo" width="100"/> 
+![ZigZag Logo](zz-logo.png) 
 
 # **ZigZag**
 
@@ -6,8 +6,7 @@
 
 The **ZigZag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version (but should).
 
-**Check out the <a href="https://d23kqqls.codepad.live/" target="_blank">demo CodePad</a>** for a live demonstration of ZigZag in action.
-
+**Check out the [demo CodePad](https://d23kqqls.codepad.live/)** for a live demonstration of ZigZag in action.
 
 ## **Requires**
 
