@@ -1,4 +1,4 @@
-<img src="logo.png" alt="ZigZag Logo" width="100"/> 
+<img src="zz-logo.png" alt="ZigZag Logo" width="100"/> 
 
 # **ZigZag**
 
