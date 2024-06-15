@@ -1,9 +1,13 @@
+![ZigZag Logo](zz-logo.png)  <!-- Replace 'path_to_logo.png' with the actual path to your logo image -->
+
 
 # **ZigZag**
 
 **ZigZag** is a robust algorithm for both image binarization and background removal. Leveraging the strengths of our previous algorithm, YinYang, ZigZag provides superior speed, accuracy, and simplicity.
 
 The **ZigZag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version (but should).
+
+**Check out the [demo CodePad](https://d23kqqls.codepad.live/)** for a live demonstration of ZigZag in action.
 
 ## **Requires**
 
