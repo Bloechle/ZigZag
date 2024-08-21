@@ -34,7 +34,7 @@ public class MainManager {
         System.out.println("    -input <inputFilePath>   : Path to the input image file (required)");
         System.out.println("    -output <outputFilePath> : Path to the output image file (optional, default is inputFilePath with 'ZZ' postfix)");
         System.out.println("    -size <size>             : Window size (optional, default is 30)");
-        System.out.println("    -percent <percent>       : Mean weight for historical documents (optional, default is 100)");
+        System.out.println("    -percent <percent>       : Mean weight for historical documents (optional, default is 90)");
         System.out.println("    -mode <mode>             : Processing mode (optional, default is 1, 0=binary, 1=binary upsampled, 2=binary antialiased, 3=gray, 4=color)");
         System.out.println("    -threads <threads>       : Number of threads for processing (optional, default is half the number of available processors)");
         System.out.println("    -lossless <true/false>   : Enable or disable lossless compression (optional, default is true)");
@@ -66,7 +66,7 @@ public class MainManager {
 
     private static void processImage(ArgsParser argsParser) {
         int size = argsParser.getInt("-size", 30);
-        int percent = argsParser.getInt("-percent", 100);
+        int percent = argsParser.getInt("-percent", 90);
         int mode = argsParser.getInt("-mode", ImageFilter.MODE_BINARY_UPSAMPLED);
         int threads = argsParser.getInt("-threads", Math.max(1, Runtime.getRuntime().availableProcessors() / 2));
         boolean debug = argsParser.getBoolean("-debug", false);

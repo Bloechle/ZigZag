@@ -15,7 +15,7 @@ set MODE_COLOR=4
 REM Apply the parameters
 set MODE=%MODE_BINARY_UP%
 set SIZE=30
-set PERCENT=100
+set PERCENT=90
 set LOSSLESS=true
 set DEBUG=false
 

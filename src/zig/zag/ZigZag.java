@@ -72,7 +72,7 @@ public class ZigZag extends ImageFilter {
         int otsuThreshold = isBinaryMode() ? Math.min(250, ImageUtil.computeOtsuThreshold(ImageUtil.getHistogram(gRast, 0, 10))) : 250;
 
         System.out.println(otsuThreshold);
-        return binarizeImage(gImg, false, (x, y, value) -> value < otsuThreshold ? (mode == MODE_GRAY_LEVEL ? value : 0) : 255);
+        return binarizeImage(gImg, mode == MODE_GRAY_LEVEL, (x, y, value) -> value < otsuThreshold ? (mode == MODE_GRAY_LEVEL ? value : 0) : 255);
     }
 
     private void computeIntegralImage(WritableRaster gRast, int[][] gInt) {

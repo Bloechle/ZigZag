@@ -6,7 +6,7 @@
 
 The **ZigZag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version (but should).
 
-**Check out the [demo CodePad](https://d23kqqls.codepad.live/)** for a live demonstration of ZigZag in action.
+**Check out the [demo CodePad](https://d23kqqls.codepad.live/)** for a live demonstration of ZigZag in action ([CodePad source](https://codepad.site/edit/d23kqqls)).
 
 ## **Requires**
 
@@ -49,7 +49,7 @@ java -cp "C:/path/ZigZag.jar" zig.zag.ZigZag -size 30 -percent 100 -mode 3 -thre
 - **-input <inputFilePath>**: Path to the input image file or directory (required).
 - **-output <outputFilePath>**: Path to the output image file or directory (optional, default is inputFilePath with 'ZZ' postfix).
 - **-size <size>**: Windows size, typical values can range from 10 to 100 pixels (optional, default is 30).
-- **-percent <percent>**: Mean weight for historical documents, typical values can range from 50 to 100 percent (optional, default is 100).
+- **-percent <percent>**: Mean weight for historical documents, typical values can range from 50 to 100 percent (optional, default is 90).
 - **-mode <mode>**: Processing mode (optional, default is 1). Available modes:
   - 0: Standard binarization mode.
   - 1: Upsampled binarization mode (x2).
@@ -85,7 +85,7 @@ series = {DocEng '23}
 }
 ```
 
-**ZigZag** paper is will be published in **DocEng'24**, in the meantime, citing the **YinYang** paper is just fine :-)
+**ZigZag** paper will be published in **DocEng'24**, in the meantime, citing the **YinYang** paper is just fine :-)
 
 ## **License**
 
