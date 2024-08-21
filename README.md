@@ -41,7 +41,7 @@ java -cp <zigZagJarPath> zig.zag.ZigZag -size <size> -percent <percent> -mode <m
 **Example:**
 
 ```sh
-java -cp "C:/path/ZigZag.jar" zig.zag.ZigZag -size 30 -percent 90 -mode 3 -threads 4 -input "C:/path/MyImage.jpg" -output "C:/path/MyBinarizedImage.png"
+java -cp "C:/path/ZigZag.jar" zig.zag.ZigZag -size 30 -percent 100 -mode 3 -threads 4 -input "C:/path/MyImage.jpg" -output "C:/path/MyBinarizedImage.png"
 ```
 
 ### **Command Line Options**
