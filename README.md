@@ -6,7 +6,7 @@
 
 The **ZigZag.jar** Java archive is generated periodically from the source code for convenience. Be careful, as it may not be the latest version (but should).
 
-**Check out the [demo CodePad](https://d23kqqls.codepad.live/)** for a live demonstration of ZigZag in action ([CodePad source](https://codepad.site/edit/d23kqqls)).
+**Check out the [demo CodePad](https://d23kqqls.live.codepad.app/)** for a live demonstration of ZigZag in action ([CodePad source](https://codepad.app/edit/d23kqqls)).
 
 ## **Requires**
 
