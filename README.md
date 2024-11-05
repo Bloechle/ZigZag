@@ -66,26 +66,24 @@ java -cp "C:/path/ZigZag.jar" zig.zag.ZigZag -size 30 -percent 90 -mode 3 -threa
 If you use this code for your research, please cite the following paper available on ACM Open Access:
 
 ```
-@inproceedings{10.1145/3573128.3609354,
+@inproceedings{10.1145/3685650.3685661,
 author = {Bloechle, Jean-Luc and Hennebert, Jean and Gisler, Christophe},
-title = {YinYang, a Fast and Robust Adaptive Document Image Binarization for Optical Character Recognition},
-year = {2023},
-isbn = {9798400700279},
+title = {ZigZag: A Robust Adaptive Approach to Non-Uniformly Illuminated Document Image Binarization},
+year = {2024},
+isbn = {9798400711695},
 publisher = {Association for Computing Machinery},
 address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3573128.3609354},
-doi = {10.1145/3573128.3609354},
-abstract = {Optical Character Recognition (OCR) from document photos taken by cell phones is a challenging task. Most OCR methods require prior binarization of the image, which can be difficult to achieve when documents are captured with various mobile devices in unknown lighting conditions. For example, shadows cast by the camera or the camera holder on a hard copy can jeopardize the binarization process and hinder the next OCR step. In the case of highly uneven illumination, binarization methods using global thresholding simply fail, and state-of-the-art adaptive algorithms often deliver unsatisfactory results. In this paper, we present a new binarization algorithm using two complementary local adaptive passes and taking advantage of the color components to improve results over current image binarization methods. The proposed approach gave remarkable results at the DocEng'22 competition on the binarization of photographed documents.},
-booktitle = {Proceedings of the ACM Symposium on Document Engineering 2023},
-articleno = {19},
-numpages = {4},
-keywords = {image thresholding, image processing, binarization, OCR},
-location = {Limerick, Ireland},
-series = {DocEng '23}
+url = {https://doi.org/10.1145/3685650.3685661},
+doi = {10.1145/3685650.3685661},
+abstract = {In the era of mobile imaging, the quality of document photos captured by smartphones often suffers due to adverse lighting conditions. Traditional document analysis and optical character recognition systems encounter difficulties with images that have not been effectively binarized, particularly under challenging lighting scenarios. This paper introduces a novel adaptive binarization algorithm optimized for such difficult lighting environments. Unlike many existing methods that rely on complex machine learning models, our approach is streamlined and machine-learning free, designed around integral images to significantly reduce computational and coding complexities. This approach enhances processing speed and improves accuracy without the need for computationally expensive training procedures. Comprehensive testing across various datasets, from smartphone-captured documents to historical manuscripts, validates its effectiveness. Moreover, the introduction of versatile output modes, including color foreground extraction, substantially enhances document quality and readability by effectively eliminating unwanted background artifacts. These enhancements are valuable in mobile document image processing across industries that prioritize efficient and accurate document management, spanning sectors such as banking, insurance, education, and archival management.},
+booktitle = {Proceedings of the ACM Symposium on Document Engineering 2024},
+articleno = {3},
+numpages = {10},
+keywords = {OCR, binarization, image processing, image thresholding},
+location = {San Jose, CA, USA},
+series = {DocEng '24}
 }
 ```
-
-**ZigZag** paper will be published in **DocEng'24**, in the meantime, citing the **YinYang** paper is just fine :-)
 
 ## **License**
 
